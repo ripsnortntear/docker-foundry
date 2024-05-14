@@ -8,11 +8,18 @@ RUN apt update -y && \
     apt-get install -y  apt-utils && \
     apt-get install -y  software-properties-common \
                         tzdata \
+                        locales \
                         cron && \
     add-apt-repository multiverse && \
     dpkg --add-architecture i386 && \
     apt update -y && \
     apt-get upgrade -y 
+
+# Local for steamcmd
+RUN locale-gen en_US.UTF-8
+
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
 
 # Setting timezone
 RUN ln -snf /usr/share/zoneinfo/${TZ:-'Europe/Berlin'} /etc/localtime && \
