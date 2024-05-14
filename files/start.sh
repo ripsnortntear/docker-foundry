@@ -9,12 +9,6 @@ echo "Server files location is set to : $server_files"
 echo "Save files locaiton is set to : $persistent_data"
 echo " "
 
-echo "Setting time zone to $TZ"
-echo $TZ > /etc/timezone 2>&1
-ln -snf /usr/share/zoneinfo/$TZ /etc/localtime 2>&1
-dpkg-reconfigure -f noninteractive tzdata 2>&1
-cron
-
 mkdir -p /home/foundry/.steam 2>/dev/null
 chmod -R 777 /home/foundry/.steam 2>/dev/null
 echo " "

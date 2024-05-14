@@ -22,6 +22,7 @@ RUN ln -snf /usr/share/zoneinfo/${TZ:-'Europe/Berlin'} /etc/localtime && \
 ADD ./files/foundry-cron /etc/cron.d/foundry-cron
 RUN chmod 0644 /etc/cron.d/foundry-cron
 RUN crontab /etc/cron.d/foundry-cron
+RUN cron
 
 # Install steamcmd and create user
 RUN useradd -m steam && cd /home/steam && \
@@ -58,6 +59,7 @@ COPY ./files/start.sh ./scripts/start.sh
 COPY ./files/app.cfg ./scripts/app.cfg
 COPY ./files/env2cfg.sh ./scripts/env2cfg.sh
 COPY ./files/backup.sh ./scripts/backup.sh
+COPY ./files/entrypoint.sh ./scripts/entrypoint.sh
 
 RUN chmod +x ./scripts/*.sh
 RUN chown foundry:foundry ./scripts/*
