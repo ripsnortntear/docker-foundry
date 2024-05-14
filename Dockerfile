@@ -1,8 +1,8 @@
 FROM ubuntu:22.04 
 LABEL maintainer="Git@Luxusburg"
-VOLUME ["/mnt/foundry/server", "/mnt/foundry/persistentdata"]
 
 ARG DEBIAN_FRONTEND="noninteractive"
+
 RUN apt update -y && \
     apt-get upgrade -y && \
     apt-get install -y  apt-utils && \
@@ -13,6 +13,10 @@ RUN apt update -y && \
     dpkg --add-architecture i386 && \
     apt update -y && \
     apt-get upgrade -y 
+
+# Setting timezone
+RUN ln -snf /usr/share/zoneinfo/${TZ:-'Europe/Berlin'} /etc/localtime && \
+    dpkg-reconfigure -f noninteractive tzdata
 
 # Setting up cron file for backup
 ADD ./files/foundry-cron /etc/cron.d/foundry-cron
@@ -34,16 +38,29 @@ RUN useradd -m steam && cd /home/steam && \
 # Install wine
 RUN apt install -y wine \
                    winbind
+
+# Install xvfb
 RUN apt install -y xserver-xorg \
                    xvfb
+
+# Clean up
 RUN rm -rf /var/lib/apt/lists/* && \
     apt clean && \
     apt autoremove -y
 
+# Create user foundry and home directory
+RUN groupadd -g "${PGID:-1000}" -o foundry && \
+    useradd -g "${PGID:-1000}" -u "${PGUID:-1000}" -o --create-home foundry
+
 # Copy batch files and give execute rights
-COPY ./files/start.sh /start.sh
-COPY ./files/app.cfg /home/steam/app.cfg
-COPY ./files/env2cfg.sh /env2cfg.sh
-COPY ./files/backup.sh /backup.sh
-RUN chmod +x /start.sh /env2cfg.sh /backup.sh
-CMD ["/start.sh"]
+WORKDIR /home/foundry
+COPY ./files/start.sh ./scripts/start.sh
+COPY ./files/app.cfg ./scripts/app.cfg
+COPY ./files/env2cfg.sh ./scripts/env2cfg.sh
+COPY ./files/backup.sh ./scripts/backup.sh
+
+RUN chmod +x ./scripts/*.sh
+RUN chown foundry:foundry ./scripts/*
+
+ENTRYPOINT ["/bin/bash", "/home/foundry/scripts/entrypoint.sh"]
+CMD ["/home/foundry/scripts/start.sh"]
