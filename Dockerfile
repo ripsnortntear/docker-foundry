@@ -21,7 +21,7 @@ RUN ln -snf /usr/share/zoneinfo/${TZ:-'Europe/Berlin'} /etc/localtime && \
 
 # Setting up cron file for backup
 ADD ./files/foundry-cron /etc/cron.d/foundry-cron
-    chmod 0644 /etc/cron.d/foundry-cron && \
+RUN chmod 0644 /etc/cron.d/foundry-cron && \
     crontab /etc/cron.d/foundry-cron && \
     cron
 
