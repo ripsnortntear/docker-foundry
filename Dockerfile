@@ -21,9 +21,9 @@ RUN ln -snf /usr/share/zoneinfo/${TZ:-'Europe/Berlin'} /etc/localtime && \
 
 # Setting up cron file for backup
 ADD ./files/foundry-cron /etc/cron.d/foundry-cron
-RUN chmod 0644 /etc/cron.d/foundry-cron
-RUN crontab /etc/cron.d/foundry-cron
-RUN cron
+    chmod 0644 /etc/cron.d/foundry-cron && \
+    crontab /etc/cron.d/foundry-cron && \
+    cron
 
 # Install wine
 RUN mkdir -pm755 /etc/apt/keyrings && \
@@ -48,13 +48,9 @@ RUN groupadd -g "${PGID:-1000}" -o foundry && \
 
 # Copy batch files and give execute rights
 WORKDIR /home/foundry
-COPY ./files/start.sh ./scripts/start.sh
-COPY ./files/app.cfg ./scripts/app.cfg
-COPY ./files/env2cfg.sh ./scripts/env2cfg.sh
-COPY ./files/backup.sh ./scripts/backup.sh
-COPY ./files/entrypoint.sh ./scripts/entrypoint.sh
-RUN chmod +x ./scripts/*.sh
-RUN chown foundry:foundry ./scripts/*
+ADD ./files ./scripts
+RUN chmod +x ./scripts/*.sh && \
+    chown foundry:foundry ./scripts/*
 
 ENTRYPOINT ["/bin/bash", "/home/foundry/scripts/entrypoint.sh"]
 CMD ["/home/foundry/scripts/start.sh"]
