@@ -26,13 +26,13 @@ RUN ln -snf /usr/share/zoneinfo/${TZ:-'Europe/Berlin'} /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata
 
 # Setting up cron file for backup
-ADD ./files/foundry-cron /etc/cron.d/foundry-cron
-RUN chmod 0644 /etc/cron.d/foundry-cron
-RUN crontab /etc/cron.d/foundry-cron
-RUN cron
+COPY ./files/foundry-cron /etc/cron.d/foundry-cron
+RUN chmod 0644 /etc/cron.d/foundry-cron && \
+    crontab /etc/cron.d/foundry-cron && \
+    cron
 
 # Install steamcmd and create user
-RUN useradd -m steam && cd /home/steam && \
+RUN useradd -m foundry && cd /home/foundry && \
     echo steam steam/question select "I AGREE" | debconf-set-selections && \
     echo steam steam/license note '' | debconf-set-selections && \
     apt purge steam steamcmd && \
@@ -56,17 +56,9 @@ RUN rm -rf /var/lib/apt/lists/* && \
     apt clean && \
     apt autoremove -y
 
-# Create user foundry and home directory
-RUN groupadd -g "${PGID:-1000}" -o foundry && \
-    useradd -g "${PGID:-1000}" -u "${PGUID:-1000}" -o --create-home foundry
-
 # Copy batch files and give execute rights
 WORKDIR /home/foundry
-COPY ./files/start.sh ./scripts/start.sh
-COPY ./files/app.cfg ./scripts/app.cfg
-COPY ./files/env2cfg.sh ./scripts/env2cfg.sh
-COPY ./files/backup.sh ./scripts/backup.sh
-COPY ./files/entrypoint.sh ./scripts/entrypoint.sh
+ADD ./files ./scripts
 
 RUN chmod +x ./scripts/*.sh
 RUN chown foundry:foundry ./scripts/*
