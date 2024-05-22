@@ -5,6 +5,7 @@
 if [ -d '/mnt/foundry/server' ] || [ -d '/mnt/foundry/persistentdata' ]; then
     echo "Old docker volume setup found!"
     echo "Change your volume from /your/path/:/mnt/foundry/server too /your/path/:/home/foundry/server_files"
+    echo "Change your volume from /your/path/:/mnt/foundry/persistentdata too /your/path/:/home/foundry/persistent_data"
     echo "Check release notes 1.3 for more information!"
     echo "https://github.com/luxusburg/docker-foundry/releases"
     exit 1
@@ -79,14 +80,22 @@ else
         fi    
     fi
 fi
-echo " "
-echo "Cleaning possible X11 leftovers"
-echo " "
-rm /tmp/.X0-lock
-rm -r /tmp/*
 
-# add Mods folder for future use
-mkdir -p $server_files/Mods 2>/dev/null
+if [ -f /tmp/.X0-lock ]; then
+    echo "Removing /tmp/.X0-lock"
+    rm /tmp/.X0-lock
+fi
+
+if [ -d /tmp/ -a -n "$(ls -A /tmp)" ]; then
+    echo "Removing all files in /tmp directory"
+    rm -r /tmp/*
+    else
+        echo "No files to remove in /tmp directory"
+fi
+
+if [ ! -d "$server_files/Mods" ]; then
+    mkdir -p "$server_files/Mods" 2>/dev/null
+fi
 
 cd "$server_files"
 echo "Starting Foundry Dedicated Server"
